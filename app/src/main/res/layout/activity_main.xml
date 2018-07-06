@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="0.6"
-        android:text="Remote Device (192.168.43.60)"
+        android:text="Remote Device (192.168.43.66)"
         android:textColor="#000000"
         android:gravity="center"/>
 

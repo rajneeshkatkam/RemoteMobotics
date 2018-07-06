@@ -198,7 +198,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             receiver.addListener("/KpKiKdValues", pidListener); //////Listening for Tag = '/test'
-           // receiverpid.startListening();
 
 
 
