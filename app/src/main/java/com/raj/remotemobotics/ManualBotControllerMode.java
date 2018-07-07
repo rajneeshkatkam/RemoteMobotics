@@ -1,12 +1,16 @@
 package com.raj.remotemobotics;
 
 import android.content.pm.ActivityInfo;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.illposed.osc.OSCMessage;
 import com.illposed.osc.OSCPortOut;
@@ -15,21 +19,26 @@ import java.net.InetAddress;
 
 import static java.lang.Thread.sleep;
 
-
 public class ManualBotControllerMode extends AppCompatActivity {
 
     //private Handler repeatUpdateHandler = new Handler();
     private OSCPortOut senderArduino;
     Boolean zeroPacket=false;
-    int onClickTouchSensitivity =5;   ///For single Click , no. of packets to be sent/No.of times loop should run
+    int onClickTouchSensitivity =5,intialPWM=400;   ///For single Click , no. of packets to be sent/No.of times loop should run
+    int pwmValue=0;
+
+    SeekBar pwmSeekBar;
 
     Boolean botForwardMotionDownFlag=false,botBackwardMotionDownFlag=false,botLeftMotionDownFlag=false,botRightMotionDownFlag=false;   ////MotionEvent.ActionDown , then it is true....used to check the action of the click
+
+    private TextView pwmValueText;
+
 
     private String arduino_IP = "192.168.43.55";  ///Static IP for Arduino
     private int ardunio_Port = 5555;              ///Port where Arduino is listening
 
 
-
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,10 +46,22 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
+
         Button forward = findViewById(R.id.forward);
         Button backward=findViewById(R.id.backward);
         Button left=findViewById(R.id.left);
         Button right=findViewById(R.id.right);
+
+
+        pwmSeekBar=findViewById(R.id.pwmSeekBar);
+        pwmSeekBar.setMin(0);
+        pwmSeekBar.setMax(1000);
+        pwmSeekBar.setProgress(intialPWM);
+        pwmValue=intialPWM;
+
+
+        pwmValueText=findViewById(R.id.pwmValueText);
+        pwmValueText.setText(String.valueOf(pwmSeekBar.getProgress()));
 
 
 
@@ -189,6 +210,32 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
 
 
+        //////////////PWM SeekBar Listener Starts//////////////////////////
+
+
+        pwmSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                pwmValue= seekBar.getProgress();
+                pwmValueText.setText(String.valueOf(seekBar.getProgress()));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
+        ////////////////PWM SeekBar Code Ends////////////////////////////////
+
+
     }
 
 
@@ -201,11 +248,11 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
             @Override
             public void run() {
-                sendPacketsToArduino(0,1,0,1);
+                sendPacketsToArduino(pwmValue,0,1,0,1);
             }
         };
 
-         thread.start();
+        thread.start();
 
     }
 
@@ -214,7 +261,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
             @Override
             public void run() {
-                sendPacketsToArduino(1,0,1,0);
+                sendPacketsToArduino(pwmValue,1,0,1,0);
             }
         };
 
@@ -227,7 +274,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
             @Override
             public void run() {
-                sendPacketsToArduino(1,0,0,1);
+                sendPacketsToArduino(pwmValue,1,0,0,1);
             }
         };
 
@@ -241,7 +288,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
             @Override
             public void run() {
-                sendPacketsToArduino(0,1,1,0);
+                sendPacketsToArduino(pwmValue,0,1,1,0);
             }
         };
 
@@ -259,7 +306,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
     ///Packet Sending Function
 
-    private void sendPacketsToArduino(int leftPin1,int leftPin2,int rightPin1,int rightPin2) {
+    private void sendPacketsToArduino(int pwm,int leftPin1,int leftPin2,int rightPin1,int rightPin2) {
 
         //Log.i("portError","Packet Called");
 
@@ -269,8 +316,8 @@ public class ManualBotControllerMode extends AppCompatActivity {
                 ///////Send Messages with arguments a multiple of 2------Very Important
                 Log.i("portError","forward Entered");
                 OSCMessage message = new OSCMessage("/motorValues");
-                message.addArgument(1000f); //Left Motor PWM Value
-                message.addArgument(1000f); //Right Motor PWM Value
+                message.addArgument((float) pwm); //Left Motor PWM Value
+                message.addArgument((float) pwm); //Right Motor PWM Value
 
                 message.addArgument(leftPin1); //Left motor direction pin one    ---- pin1-0 and pin2-1  (Left Motor Forwards)
                 message.addArgument(leftPin2); //Left motor direction pin two
@@ -358,7 +405,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    sendPacketsToArduino(0, 0, 0, 0);
+                    sendPacketsToArduino(0,1,1,1,1);
                 }
             };
 
@@ -379,7 +426,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    sendPacketsToArduino(0, 0, 0, 0);
+                    sendPacketsToArduino(0,1,1,1,1);
                 }
             };
 

@@ -5,19 +5,116 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.raj.remotemobotics.ManualBotControllerMode"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:gravity="center">
 
 
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            tools:ignore="NestedWeights" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:text="PWM"
+                android:gravity="center"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/pwmValueText"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="3"
+                android:textSize="30sp"
+                android:gravity="center"/>
+
+
+
+        </LinearLayout>
+
+
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+
+
+
+
+
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+
+
+        <SeekBar
+            android:id="@+id/pwmSeekBar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:paddingStart="50dp"
+            android:paddingEnd="50dp"
+            tools:ignore="NestedWeights" />
+
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.9"/>
+
 
         <Button
             android:layout_width="0dp"
-            android:layout_height="150dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/forward"
+            android:text="forward"
+            tools:ignore="ButtonStyle" />
+
+
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:id="@+id/left"
             android:text="left"
-            tools:ignore="ButtonStyle" />
+            tools:ignore="ButtonStyle,NestedWeights" />
 
         <View
             android:layout_width="0dp"
@@ -26,7 +123,7 @@
 
         <Button
             android:layout_width="0dp"
-            android:layout_height="150dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:id="@+id/right"
             android:text="right"
@@ -37,32 +134,20 @@
             android:layout_height="match_parent"
             android:layout_weight="0.8"/>
 
-        <LinearLayout
+
+        <Button
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_weight="1">
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:id="@+id/forward"
-                android:text="forward"
-                tools:ignore="ButtonStyle" />
-
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:id="@+id/backward"
-                android:text="backward"
-                tools:ignore="ButtonStyle" />
+            android:layout_weight="1"
+            android:id="@+id/backward"
+            android:text="backward"
+            tools:ignore="ButtonStyle" />
 
 
-        </LinearLayout>
 
 
+
+    </LinearLayout>
 
 
 </LinearLayout>
