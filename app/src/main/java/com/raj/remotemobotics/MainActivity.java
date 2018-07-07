@@ -2,12 +2,14 @@ package com.raj.remotemobotics;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -27,8 +29,11 @@ import static java.lang.Thread.sleep;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button openCamButton,kpSend,kiSend,kdSend;
+    Button openCamButton,kpSend,kiSend,kdSend,manualBotMode;
     EditText KpInput,KiInput,KdInput;
+
+    SharedPreferences file;  ///For storing Kp Ki Kd values after app shutdown
+
 
 
     private TextView yaw,pitch,roll,statusTextView;
@@ -40,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private int hotspot_Port= 1111;        ///Remote device Listening port
 
     private OSCPortOut sender;
-    private OSCPortIn receiver,receiverpid;
+    private OSCPortIn receiver;
 
 
     Boolean sendPIDFlag=false;
@@ -53,25 +58,37 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        openCamButton = (Button) findViewById(R.id.openCamButton);
-        kpSend = (Button) findViewById(R.id.kpSend);
-        kiSend = (Button) findViewById(R.id.kiSend);
-        kdSend = (Button) findViewById(R.id.kdSend);
-
-        KpInput= (EditText) findViewById(R.id.KpInput);
-        KiInput= (EditText) findViewById(R.id.KiInput);
-        KdInput= (EditText) findViewById(R.id.KdInput);
-
-        KpInput.setText("2.12");
-        KiInput.setText("0");
-        KdInput.setText("1.11");
+        ///For Hiding the Keyboard intially
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
 
+        openCamButton =  findViewById(R.id.openCamButton);
+        manualBotMode=findViewById(R.id.manualBotMode);
+        kpSend =  findViewById(R.id.kpSend);
+        kiSend =  findViewById(R.id.kiSend);
+        kdSend =  findViewById(R.id.kdSend);
 
-        statusTextView= (TextView) findViewById(R.id.statusTextView);
-        yaw= (TextView) findViewById(R.id.yaw);
-        pitch= (TextView) findViewById(R.id.pitch);
-        roll= (TextView) findViewById(R.id.roll);
+        KpInput=  findViewById(R.id.KpInput);
+        KiInput=  findViewById(R.id.KiInput);
+        KdInput=  findViewById(R.id.KdInput);
+
+
+
+        statusTextView=  findViewById(R.id.statusTextView);
+        yaw=    findViewById(R.id.yaw);
+        pitch=  findViewById(R.id.pitch);
+        roll=   findViewById(R.id.roll);
+
+
+        ///Retriving the values of Kp Ki Kd that were saved after the app was shutdown
+        file = getSharedPreferences("save", 0);
+
+        KpInput.setText(String.valueOf(Float.valueOf(file.getString("Kp","0"))));
+        KiInput.setText(String.valueOf(Float.valueOf(file.getString("Ki","0"))));
+        KdInput.setText(String.valueOf(Float.valueOf(file.getString("Kd","0"))));
+
+
+
 
 
         openCamButton.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +99,17 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+
+        manualBotMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(),ManualBotControllerMode.class));
+            }
+        });
+
+
+
 
 
 
@@ -180,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
         try {
 
              receiver = new OSCPortIn(remoteDevice_Port);  ///Listening port number
-             //receiverpid = new OSCPortIn(remoteDevice_Port);  ///Listening port number
 
 
             ////PID Values Listener
@@ -229,8 +256,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         receiver.close();
-        receiverpid.close();
+
+
+        SharedPreferences.Editor edit = file.edit();
+        edit.putString("Kp", String.valueOf(KpInput.getText())).apply();
+        edit.putString("Ki", String.valueOf(KiInput.getText())).apply();
+        edit.putString("Kd", String.valueOf(KdInput.getText())).apply();
+
+
+
+
     }
+
+
+
 
 
 
