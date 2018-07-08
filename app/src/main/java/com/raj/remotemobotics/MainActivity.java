@@ -3,8 +3,6 @@ package com.raj.remotemobotics;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private String hotspot_IP="192.168.43.1";  ///Remote device Ip
     private int hotspot_Port= 1111;        ///Remote device Listening port
 
-    private OSCPortOut sender;
+    public static OSCPortOut sender;
     private OSCPortIn receiver;
 
 
@@ -104,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         manualBotMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                sendPIDValuePacketsToHotSpotDevice("Manual..Bot..Mode........Entered","","",2);
                 startActivity(new Intent(getApplicationContext(),ManualBotControllerMode.class));
             }
         });
@@ -121,11 +120,11 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(this,String.valueOf(view.getId()),Toast.LENGTH_SHORT).show();
 
-        sendPacketsToHotSpotDevice();
+        sendPIDValuePacketsToHotSpotDevice(String.valueOf(KpInput.getText()),String.valueOf(KiInput.getText()),String.valueOf(KdInput.getText()),1);
         /*Thread thread = new Thread() {
             @Override
             public void run() {
-                sendPacketsToHotSpotDevice();
+                sendPIDValuePacketsToHotSpotDevice();
             }
         };
         thread.start();
@@ -138,9 +137,9 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private void sendPacketsToHotSpotDevice() {
+    private void sendPIDValuePacketsToHotSpotDevice(final String s1, final String s2, final String s3, final int mode) {
 
-        Thread thread=new Thread() {
+        final Thread thread=new Thread() {
             @Override
             public void run() {
 
@@ -152,18 +151,30 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("portError","Packet in");
 
                         ///////Send Messages with arguments a multiple of 2------Very Important
+                        if(mode==1) {
+                            OSCMessage message = new OSCMessage("/PIDValues");
+                            message.addArgument(Float.valueOf(s1));
+                            message.addArgument(Float.valueOf(s2));
+                            message.addArgument(Float.valueOf(s3));
+                            message.addArgument(2);
+                            sender.send(message);
+                            //message.addArgument(roll);
+                            //Log.i("portError","Packet Created");
+                            Log.i("portError","PID Packet Sent");
+                        }
+                        else if(mode==2)
+                        {
+                            OSCMessage message = new OSCMessage("/BotMode");
+                            message.addArgument(s1);
+                            message.addArgument("");
+                            sender.send(message);
+                            Log.i("portError","Bot Mode Packet Sent");
 
-                        OSCMessage message = new OSCMessage("/PIDValues");
-                        message.addArgument(Float.valueOf(String.valueOf(KpInput.getText())));
-                        message.addArgument(Float.valueOf(String.valueOf(KiInput.getText())));
-                        message.addArgument(Float.valueOf(String.valueOf(KdInput.getText())));
-                        message.addArgument(2);
-                        //message.addArgument(roll);
-                        //Log.i("portError","Packet Created");
+                        }
 
 
-                        sender.send(message);
-                        Log.i("portError","Packet Sent");
+
+
 
                     } catch (Exception e) {
 
@@ -199,6 +210,8 @@ public class MainActivity extends AppCompatActivity {
             // Error handling for any other errors
             Log.i("portError",e.getMessage());
         }
+
+        sendPIDValuePacketsToHotSpotDevice("Back. To. Home. Screen","","",2);
 
 
         ///For receiving messages from Hotspot
@@ -252,7 +265,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        receiver.close();
+
+        //receiver.close();
 
 
         SharedPreferences.Editor edit = file.edit();
