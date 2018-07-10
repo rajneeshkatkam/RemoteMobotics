@@ -79,11 +79,6 @@ public class MainActivity extends AppCompatActivity {
         ///Retriving the values of Kp Ki Kd that were saved after the app was shutdown
         file = getSharedPreferences("save", 0);
 
-        KpInput.setText(String.valueOf(Float.valueOf(file.getString("Kp","0"))));
-        KiInput.setText(String.valueOf(Float.valueOf(file.getString("Ki","0"))));
-        KdInput.setText(String.valueOf(Float.valueOf(file.getString("Kd","0"))));
-
-
 
 
 
@@ -195,6 +190,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+
+        KpInput.setText(String.valueOf(Float.valueOf(file.getString("Kp","0"))));
+        KiInput.setText(String.valueOf(Float.valueOf(file.getString("Ki","0"))));
+        KdInput.setText(String.valueOf(Float.valueOf(file.getString("Kd","0"))));
+
+
 
 
         /// OSC Initialization

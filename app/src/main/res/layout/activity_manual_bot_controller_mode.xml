@@ -9,6 +9,8 @@
     android:gravity="center">
 
 
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -27,18 +29,36 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:text="Left Motor PWM"
-                android:gravity="center"
+                android:paddingLeft="40dp"
+                android:text="LEFT MOTOR PWM"
                 android:textSize="18sp"/>
 
-            <EditText
-                android:id="@+id/leftPwmValueText"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1.5"
-                android:textSize="30sp"
-                android:gravity="center"
-                android:inputType="numberDecimal"/>
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/leftPwmValueText"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="3"
+                    android:textSize="30sp"
+                    android:gravity="center"
+                    android:inputType="numberDecimal"/>
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Set"
+                    android:id="@+id/leftPwmSetButton"/>
+
+
+
+            </LinearLayout>
+
 
             <SeekBar
                 android:id="@+id/leftPwmSeekBar"
@@ -70,18 +90,40 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:text="Right Motor PWM"
-                android:gravity="center"
+                android:text="RIGHT MOTOR PWM"
+                android:paddingLeft="40dp"
                 android:textSize="18sp"/>
 
-            <EditText
-                android:id="@+id/rightPwmValueText"
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1.5"
-                android:textSize="30sp"
-                android:gravity="center"
-                android:inputType="numberDecimal"/>
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/rightPwmValueText"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="3"
+                    android:textSize="30sp"
+                    android:gravity="center"
+                    android:inputType="numberDecimal"
+                    tools:ignore="NestedWeights" />
+
+                <Button
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text="Set"
+                    android:id="@+id/rightPwmSetButton"/>
+
+
+
+            </LinearLayout>
+
+
+
 
             <SeekBar
                 android:id="@+id/rightPwmSeekBar"

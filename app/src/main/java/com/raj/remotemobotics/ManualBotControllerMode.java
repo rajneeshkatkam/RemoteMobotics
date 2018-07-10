@@ -2,6 +2,7 @@ package com.raj.remotemobotics;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,6 +41,8 @@ public class ManualBotControllerMode extends AppCompatActivity {
     int onClickTouchSensitivity =1,intialPWM=400, sleepTime =4;   ///For single Click , no. of packets to be sent/No.of times loop should run
     int leftPwmValue,rightPwmValue;
 
+    SharedPreferences file;
+
     SeekBar leftPwmSeekBar,rightPwmSeekBar;
 
     AtomicBoolean botForwardMotionDownFlag=new AtomicBoolean(false);
@@ -67,6 +70,10 @@ public class ManualBotControllerMode extends AppCompatActivity {
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 
+        ///Retriving the values of leftPwm and RightPwm that were saved after the app was shutdown
+        file = getSharedPreferences("save", 0);
+
+
         forward = findViewById(R.id.forward);
         backward=findViewById(R.id.backward);
         left=findViewById(R.id.left);
@@ -82,18 +89,16 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
 
 
-
         leftPwmSeekBar =findViewById(R.id.leftPwmSeekBar);
         leftPwmSeekBar.setMin(0);
         leftPwmSeekBar.setMax(1000);
-        leftPwmSeekBar.setProgress(intialPWM);
+
         leftPwmValue =intialPWM;
 
 
         rightPwmSeekBar =findViewById(R.id.rightPwmSeekBar);
         rightPwmSeekBar.setMin(0);
         rightPwmSeekBar.setMax(1000);
-        rightPwmSeekBar.setProgress(intialPWM);
         rightPwmValue =intialPWM;
 
 
@@ -107,44 +112,24 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
 
 
-        leftPwmValueText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        Button leftPwmSetButton=findViewById(R.id.leftPwmSetButton);
+        Button rightPwmSetButton=findViewById(R.id.rightPwmSetButton);
 
-            }
-
+        leftPwmSetButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(i2!=0)
-                    leftPwmSeekBar.setProgress(Integer.valueOf(charSequence.toString()));
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
+            public void onClick(View view) {
+                leftPwmSeekBar.setProgress(Integer.valueOf(String.valueOf(leftPwmValueText.getText())));
 
             }
         });
 
-
-        rightPwmValueText.addTextChangedListener(new TextWatcher() {
+        rightPwmSetButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void onClick(View view) {
+                rightPwmSeekBar.setProgress(Integer.valueOf(String.valueOf(rightPwmValueText.getText())));
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(i2!=0)
-                    rightPwmSeekBar.setProgress(Integer.valueOf(charSequence.toString()));
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
             }
         });
-
-
-
 
 
 
@@ -351,7 +336,10 @@ public class ManualBotControllerMode extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        leftPwmSeekBar.setProgress(Integer.valueOf(file.getString("leftPwm","400")));
+        rightPwmSeekBar.setProgress(Integer.valueOf(file.getString("rightPwm","400")));
 
+        
         /// OSC Initialization
         try {
             Log.i("portError","Entered");
@@ -369,6 +357,11 @@ public class ManualBotControllerMode extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
+        SharedPreferences.Editor edit = file.edit();
+        edit.putString("leftPwm", String.valueOf(leftPwmValueText.getText())).apply();
+        edit.putString("rightPwm", String.valueOf(rightPwmValueText.getText())).apply();
+
 
         Thread thread = new Thread() {
 
