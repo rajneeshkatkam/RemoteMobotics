@@ -1,5 +1,7 @@
 package com.raj.remotemobotics;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,20 +18,30 @@ import com.illposed.osc.OSCMessage;
 import com.illposed.osc.OSCPortOut;
 
 import java.net.InetAddress;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Thread.sleep;
 
 public class ManualBotControllerMode extends AppCompatActivity {
 
+
+    @SuppressLint("StaticFieldLeak")
+    public static Activity fa;
+
+
+
     //private Handler repeatUpdateHandler = new Handler();
     private OSCPortOut senderArduino;
     Boolean zeroPacket=false;
-    int onClickTouchSensitivity =5,intialPWM=400;   ///For single Click , no. of packets to be sent/No.of times loop should run
+    int onClickTouchSensitivity =1,intialPWM=400, sleepTime =4;   ///For single Click , no. of packets to be sent/No.of times loop should run
     int pwmValue=0;
 
     SeekBar pwmSeekBar;
 
-    Boolean botForwardMotionDownFlag=false,botBackwardMotionDownFlag=false,botLeftMotionDownFlag=false,botRightMotionDownFlag=false;   ////MotionEvent.ActionDown , then it is true....used to check the action of the click
+    AtomicBoolean botForwardMotionDownFlag=new AtomicBoolean(false);
+    AtomicBoolean botBackwardMotionDownFlag=new AtomicBoolean(false);
+    AtomicBoolean botLeftMotionDownFlag=new AtomicBoolean(false);
+    AtomicBoolean botRightMotionDownFlag=new AtomicBoolean(false);   ////MotionEvent.ActionDown , then it is true....used to check the action of the click
 
     private TextView pwmValueText;
 
@@ -44,6 +56,9 @@ public class ManualBotControllerMode extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manual_bot_controller_mode);
 
+
+        fa=this;
+
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 
@@ -51,6 +66,9 @@ public class ManualBotControllerMode extends AppCompatActivity {
         Button backward=findViewById(R.id.backward);
         Button left=findViewById(R.id.left);
         Button right=findViewById(R.id.right);
+        Button spotLeft=findViewById(R.id.spotLeft);
+        Button spotRight=findViewById(R.id.spotRight);
+        Button stop=findViewById(R.id.stop);
 
 
         pwmSeekBar=findViewById(R.id.pwmSeekBar);
@@ -73,22 +91,31 @@ public class ManualBotControllerMode extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction()==MotionEvent.ACTION_UP) {
-                    botForwardMotionDownFlag = false;
+                    botForwardMotionDownFlag.set(false);
+                    try {
+                        botStop();
+                        botStop();
+                        botStop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                 }
                 else if(event.getAction()==MotionEvent.ACTION_DOWN) {
-                    botForwardMotionDownFlag=true;
+                    botForwardMotionDownFlag.set(true);
                     Thread motionListenerThread=new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            while(botForwardMotionDownFlag)
+                            while(botForwardMotionDownFlag.get())
                             {
-                                int count = 0;
-                                zeroPacket = false;
-                                while (count < onClickTouchSensitivity) {
-                                    botForward();
-                                    count++;
+                                botForward();
+
+                                try {
+                                    sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
-                                zeroPacket = true;
+
                             }
                         }
                     });
@@ -107,23 +134,71 @@ public class ManualBotControllerMode extends AppCompatActivity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction()==MotionEvent.ACTION_UP) {
-                    botBackwardMotionDownFlag=false;
+                    botBackwardMotionDownFlag.set(false);
+                    try {
+                        botStop();
+                        botStop();
+                        botStop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                 }
                 else if(event.getAction()==MotionEvent.ACTION_DOWN) {
-                    botBackwardMotionDownFlag=true;
+                    botBackwardMotionDownFlag.set(true);
 
                     Thread motionListenerThread=new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            while(botBackwardMotionDownFlag)
+                            while(botBackwardMotionDownFlag.get())
                             {
-                                int count = 0;
-                                zeroPacket = false;
-                                while (count < onClickTouchSensitivity) {
-                                    botBackward();
-                                    count++;
+                                botBackward();
+
+                                try {
+                                    sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
-                                zeroPacket = true;
+                            }
+                        }
+                    });
+
+                    motionListenerThread.start();
+                }
+
+                return false;
+            }
+        });
+
+
+        stop.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction()==MotionEvent.ACTION_UP) {
+                    botBackwardMotionDownFlag.set(false);
+                    try {
+                        botStop();
+                        botStop();
+                        botStop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else if(event.getAction()==MotionEvent.ACTION_DOWN) {
+                    botBackwardMotionDownFlag.set(true);
+
+                    Thread motionListenerThread=new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            while(botBackwardMotionDownFlag.get())
+                            {
+                                try {
+                                    botStop();
+                                    sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     });
@@ -142,22 +217,31 @@ public class ManualBotControllerMode extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction()==MotionEvent.ACTION_UP) {
-                    botLeftMotionDownFlag = false;
+                    botLeftMotionDownFlag.set(false);
+                    try {
+                        botStop();
+                        botStop();
+                        botStop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                 }
                 else if(event.getAction()==MotionEvent.ACTION_DOWN) {
-                    botLeftMotionDownFlag=true;
+                    botLeftMotionDownFlag.set(true);
                     Thread motionListenerThread=new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            while(botLeftMotionDownFlag)
+                            while(botLeftMotionDownFlag.get())
                             {
-                                int count = 0;
-                                zeroPacket = false;
-                                while (count < onClickTouchSensitivity) {
-                                    botLeft();
-                                    count++;
+                                botLeft();
+
+                                try {
+                                    sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
-                                zeroPacket = true;
+
                             }
                         }
                     });
@@ -176,22 +260,31 @@ public class ManualBotControllerMode extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction()==MotionEvent.ACTION_UP) {
-                    botRightMotionDownFlag = false;
+                    botRightMotionDownFlag.set(false);
+                    try {
+                        botStop();
+                        botStop();
+                        botStop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                 }
                 else if(event.getAction()==MotionEvent.ACTION_DOWN) {
-                    botRightMotionDownFlag=true;
+                    botRightMotionDownFlag.set(true);
                     Thread motionListenerThread=new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            while(botRightMotionDownFlag)
+                            while(botRightMotionDownFlag.get())
                             {
-                                int count = 0;
-                                zeroPacket = false;
-                                while (count < onClickTouchSensitivity) {
-                                    botRight();
-                                    count++;
+                                botRight();
+
+                                try {
+                                    sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
-                                zeroPacket = true;
+
                             }
                         }
                     });
@@ -203,6 +296,96 @@ public class ManualBotControllerMode extends AppCompatActivity {
                 return false;
             }
         });
+
+
+
+        spotLeft.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction()==MotionEvent.ACTION_UP) {
+                    botRightMotionDownFlag.set(false);
+                    try {
+                        botStop();
+                        botStop();
+                        botStop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else if(event.getAction()==MotionEvent.ACTION_DOWN) {
+                    botRightMotionDownFlag.set(true);
+                    Thread motionListenerThread=new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            while(botRightMotionDownFlag.get())
+                            {
+                                botSpotLeft();
+
+                                try {
+                                    sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        }
+                    });
+
+                    motionListenerThread.start();
+                }
+
+
+                return false;
+            }
+        });
+
+
+
+
+        spotRight.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction()==MotionEvent.ACTION_UP) {
+                    botRightMotionDownFlag.set(false);
+                    try {
+                        botStop();
+                        botStop();
+                        botStop();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else if(event.getAction()==MotionEvent.ACTION_DOWN) {
+                    botRightMotionDownFlag.set(true);
+                    Thread motionListenerThread=new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            while(botRightMotionDownFlag.get())
+                            {
+                                botSpotRight();
+
+                                try {
+                                    sleep(sleepTime);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        }
+                    });
+
+                    motionListenerThread.start();
+                }
+
+
+                return false;
+            }
+        });
+
 
 
         /////////////////////CLICK LISTENERS CODE ENDS ///////////////////////////////
@@ -274,7 +457,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
             @Override
             public void run() {
-                sendPacketsToArduino(pwmValue,1,0,0,1);
+                sendPacketsToArduino(pwmValue,0,0,0,1);
             }
         };
 
@@ -288,11 +471,58 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
             @Override
             public void run() {
+                sendPacketsToArduino(pwmValue,0,1,0,0);
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+    public void botSpotLeft() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(pwmValue,1,0,0,1);
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+    public void botSpotRight() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
                 sendPacketsToArduino(pwmValue,0,1,1,0);
             }
         };
 
         thread.start();
+
+    }
+
+
+    public void botStop() throws InterruptedException {
+
+        sleep(sleepTime);
+
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(0,1,1,1,1);
+            }
+        };
+
+        thread.start();
+
+
 
     }
 
@@ -308,9 +538,8 @@ public class ManualBotControllerMode extends AppCompatActivity {
 
     private void sendPacketsToArduino(int pwm,int leftPin1,int leftPin2,int rightPin1,int rightPin2) {
 
-        //Log.i("portError","Packet Called");
 
-        if (!zeroPacket && senderArduino != null) {
+        if (senderArduino != null) {
             try {
 
                 ///////Send Messages with arguments a multiple of 2------Very Important
@@ -330,7 +559,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
                 Log.i("portError",message.getArguments().toString());
                 //zeroPacket=true;
                 //Log.i("portError","Packet Sent");
-                sleep(1);
+                //sleep(1);
 
             } catch (Exception e) {
 
@@ -340,38 +569,6 @@ public class ManualBotControllerMode extends AppCompatActivity {
             }
         }
 
-        if (zeroPacket)
-        {
-            try {
-
-                ///////Send Messages with arguments a multiple of 2------Very Important
-                Log.i("portError"," Zero forward Entered");
-                OSCMessage message = new OSCMessage("/motorValues");
-                message.addArgument(0f); //Left Motor PWM Value
-                message.addArgument(0f); //Right Motor PWM Value
-
-                message.addArgument(1); //Left motor direction pin one
-                message.addArgument(1); //Left motor direction pin two
-
-                message.addArgument(1); //Right motor direction pin one
-                message.addArgument(1); //Right motor direction pin two
-                //message.addArgument(roll);
-                //Log.i("portError","Packet Created");
-
-                senderArduino.send(message);
-
-                Log.i("portError",message.getArguments().toString());
-                //Log.i("portError","Packet Sent");
-                sleep(1);
-
-            } catch (Exception e) {
-
-                Log.i("portError",e.getMessage());
-                //Log.i("portErrorArduino",e.toString());
-                // Error handling for some error
-            }
-
-        }
 
     }
 
@@ -380,6 +577,7 @@ public class ManualBotControllerMode extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
 
         /// OSC Initialization
         try {
@@ -399,19 +597,20 @@ public class ManualBotControllerMode extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        int count=0;
-        while(count<onClickTouchSensitivity) {
-            Thread thread = new Thread() {
+        Thread thread = new Thread() {
 
-                @Override
-                public void run() {
-                    sendPacketsToArduino(0,1,1,1,1);
+            @Override
+            public void run() {
+                try {
+                    botStop();
+                    botStop();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            };
+            }
+        };
 
-            thread.start();
-            count++;
-        }
+        thread.start();
 
     }
 
@@ -420,21 +619,109 @@ public class ManualBotControllerMode extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
 
-        int count=0;
-        while(count<onClickTouchSensitivity) {
-            Thread thread = new Thread() {
+        Thread thread = new Thread() {
 
-                @Override
-                public void run() {
-                    sendPacketsToArduino(0,1,1,1,1);
+            @Override
+            public void run() {
+                try {
+                    botStop();
+                    botStop();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            };
+            }
+        };
 
-            thread.start();
-            count++;
-        }
-
-
+        thread.start();
 
     }
 }
+
+
+
+
+
+
+
+
+/*   forward.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int count=0;
+                zeroPacket=false;
+                while(count< onClickTouchSensitivity) {
+                    botForward();
+                    count++;
+                }
+                zeroPacket=true;
+
+                //zeroPacket=false;
+            }
+        });
+
+        backward.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int count=0;
+                zeroPacket=false;
+                while(count< onClickTouchSensitivity) {
+                    botBackward();
+                    count++;
+                }
+                zeroPacket=true;
+
+            }
+        });
+
+        forward.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                autoIncrement = true;
+                zeroPacket=false;
+                //repeatUpdateHandler.post(new RepetitiveUpdater());
+                return false;
+            }
+        });
+
+        backward.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                autoDecrement = true;
+                zeroPacket=false;
+                //repeatUpdateHandler.post(new RepetitiveUpdater());
+                return false;
+            }
+        });
+
+
+
+
+    ////For continous click events
+    class RepetitiveUpdater implements Runnable {
+
+        @Override
+        public void run() {
+            long REPEAT_DELAY = 0;
+            if (autoIncrement) {
+                botForward();
+                repeatUpdateHandler.postDelayed(new RepetitiveUpdater(), REPEAT_DELAY);
+                //Log.i("portError","forward");
+            } else if (autoDecrement) {
+                botBackward();
+                repeatUpdateHandler.postDelayed(new RepetitiveUpdater(), REPEAT_DELAY);
+                //Log.i("portError","backward");
+            }
+        }
+
+    }
+
+
+*/
+
+
+
+
+
+

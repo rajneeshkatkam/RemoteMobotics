@@ -16,17 +16,21 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-        <View
+        <SeekBar
+            android:id="@+id/pwmSeekBar"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="2.1"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:thumbOffset="8dp"
             tools:ignore="NestedWeights" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="0.5">
 
             <TextView
                 android:layout_width="match_parent"
@@ -50,16 +54,50 @@
 
 
 
-        <View
+        <Button
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"/>
-
-
-
+            android:layout_weight="1"
+            android:id="@+id/stop"
+            android:text="stop"
+            tools:ignore="ButtonStyle" />
 
 
     </LinearLayout>
+
+
+    <!-- <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="0dp"
+         android:layout_weight="1"
+         android:orientation="horizontal">
+
+
+
+         <SeekBar
+             android:id="@+id/leftPwmSeekBar"
+             android:layout_width="0dp"
+             android:layout_height="match_parent"
+             android:layout_weight="2"
+             android:paddingStart="20dp"
+             android:paddingEnd="20dp"
+             android:thumbOffset="8dp"
+             tools:ignore="NestedWeights" />
+
+
+         <View
+             android:layout_width="0dp"
+             android:layout_height="match_parent"
+             android:layout_weight="1.9"/>
+
+
+
+     </LinearLayout>
+
+
+
+ -->
+
 
 
 
@@ -70,22 +108,34 @@
         android:layout_weight="1"
         android:orientation="horizontal">
 
-
-
-        <SeekBar
-            android:id="@+id/pwmSeekBar"
+        <Button
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:paddingStart="50dp"
-            android:paddingEnd="50dp"
-            tools:ignore="NestedWeights" />
+            android:layout_weight="1"
+            android:id="@+id/spotLeft"
+            android:text="spot left"
+            tools:ignore="ButtonStyle,NestedWeights" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.1"/>
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:id="@+id/spotRight"
+            android:text="spot right"
+            tools:ignore="ButtonStyle" />
+
+
 
 
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.9"/>
+            android:layout_weight="0.5"/>
 
 
         <Button
@@ -132,7 +182,7 @@
         <View
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.8"/>
+            android:layout_weight="0.5"/>
 
 
         <Button
