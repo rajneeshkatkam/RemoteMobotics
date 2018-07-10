@@ -46,8 +46,6 @@ public class MainActivity extends AppCompatActivity {
     private OSCPortIn receiver;
 
 
-    Boolean sendPIDFlag=false;
-
 
     @SuppressLint("SetTextI18n")
     @Override

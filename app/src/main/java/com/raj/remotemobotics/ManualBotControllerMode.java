@@ -7,10 +7,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -21,6 +24,7 @@ import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Thread.sleep;
+
 
 public class ManualBotControllerMode extends AppCompatActivity {
 
@@ -34,17 +38,18 @@ public class ManualBotControllerMode extends AppCompatActivity {
     private OSCPortOut senderArduino;
     Boolean zeroPacket=false;
     int onClickTouchSensitivity =1,intialPWM=400, sleepTime =4;   ///For single Click , no. of packets to be sent/No.of times loop should run
-    int pwmValue=0;
+    int leftPwmValue,rightPwmValue;
 
-    SeekBar pwmSeekBar;
+    SeekBar leftPwmSeekBar,rightPwmSeekBar;
 
     AtomicBoolean botForwardMotionDownFlag=new AtomicBoolean(false);
     AtomicBoolean botBackwardMotionDownFlag=new AtomicBoolean(false);
     AtomicBoolean botLeftMotionDownFlag=new AtomicBoolean(false);
     AtomicBoolean botRightMotionDownFlag=new AtomicBoolean(false);   ////MotionEvent.ActionDown , then it is true....used to check the action of the click
 
-    private TextView pwmValueText;
+    private EditText leftPwmValueText,rightPwmValueText;
 
+    Button forward,backward,stop,spotLeft,spotRight,left,right;
 
     private String arduino_IP = "192.168.43.55";  ///Static IP for Arduino
     private int ardunio_Port = 5555;              ///Port where Arduino is listening
@@ -62,26 +67,352 @@ public class ManualBotControllerMode extends AppCompatActivity {
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 
-        Button forward = findViewById(R.id.forward);
-        Button backward=findViewById(R.id.backward);
-        Button left=findViewById(R.id.left);
-        Button right=findViewById(R.id.right);
-        Button spotLeft=findViewById(R.id.spotLeft);
-        Button spotRight=findViewById(R.id.spotRight);
-        Button stop=findViewById(R.id.stop);
+        forward = findViewById(R.id.forward);
+        backward=findViewById(R.id.backward);
+        left=findViewById(R.id.left);
+        right=findViewById(R.id.right);
+        spotLeft=findViewById(R.id.spotLeft);
+        spotRight=findViewById(R.id.spotRight);
+        stop=findViewById(R.id.stop);
+
+        ////Bot Button Clicks
+        botControlButtonClickListeners();
 
 
-        pwmSeekBar=findViewById(R.id.pwmSeekBar);
-        pwmSeekBar.setMin(0);
-        pwmSeekBar.setMax(1000);
-        pwmSeekBar.setProgress(intialPWM);
-        pwmValue=intialPWM;
 
 
-        pwmValueText=findViewById(R.id.pwmValueText);
-        pwmValueText.setText(String.valueOf(pwmSeekBar.getProgress()));
 
 
+        leftPwmSeekBar =findViewById(R.id.leftPwmSeekBar);
+        leftPwmSeekBar.setMin(0);
+        leftPwmSeekBar.setMax(1000);
+        leftPwmSeekBar.setProgress(intialPWM);
+        leftPwmValue =intialPWM;
+
+
+        rightPwmSeekBar =findViewById(R.id.rightPwmSeekBar);
+        rightPwmSeekBar.setMin(0);
+        rightPwmSeekBar.setMax(1000);
+        rightPwmSeekBar.setProgress(intialPWM);
+        rightPwmValue =intialPWM;
+
+
+        leftPwmValueText =findViewById(R.id.leftPwmValueText);
+        leftPwmValueText.setText(String.valueOf(leftPwmValue));
+
+
+        rightPwmValueText =findViewById(R.id.rightPwmValueText);
+        rightPwmValueText.setText(String.valueOf(rightPwmValue));
+
+
+
+
+        leftPwmValueText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(i2!=0)
+                    leftPwmSeekBar.setProgress(Integer.valueOf(charSequence.toString()));
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+
+        rightPwmValueText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(i2!=0)
+                    rightPwmSeekBar.setProgress(Integer.valueOf(charSequence.toString()));
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+
+
+
+
+
+        //////////////PWM SeekBar Listener Starts//////////////////////////
+
+
+        leftPwmSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                leftPwmValue = seekBar.getProgress();
+                leftPwmValueText.setText(String.valueOf(seekBar.getProgress()));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        rightPwmSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+
+                rightPwmValue = seekBar.getProgress();
+                rightPwmValueText.setText(String.valueOf(seekBar.getProgress()));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
+        ////////////////PWM SeekBar Code Ends////////////////////////////////
+
+
+
+    }
+
+    ///////////////BOT Motion Functions Starts/////////////////////////////////////
+
+
+    public void botForward() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(leftPwmValue,rightPwmValue,0,1,0,1);
+            }
+        };
+
+        thread.start();
+
+    }
+
+    public void botBackward() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(leftPwmValue,rightPwmValue,1,0,1,0);
+            }
+        };
+
+        thread.start();
+
+    }
+
+    public void botLeft() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(leftPwmValue,rightPwmValue,0,0,0,1);
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+    public void botRight() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(leftPwmValue,rightPwmValue,0,1,0,0);
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+    public void botSpotLeft() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(leftPwmValue,rightPwmValue,1,0,0,1);
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+    public void botSpotRight() {
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(leftPwmValue,rightPwmValue,0,1,1,0);
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+    public void botStop() throws InterruptedException {
+
+        sleep(sleepTime);
+
+        Thread thread =new Thread(){
+
+            @Override
+            public void run() {
+                sendPacketsToArduino(0,0,1,1,1,1);
+            }
+        };
+
+        thread.start();
+
+
+
+    }
+
+
+    ///////////////BOT Motion Functions Ends/////////////////////////////////////
+
+
+
+
+
+
+    ///Packet Sending Function
+
+    private void sendPacketsToArduino(int pwmLeft,int pwmRight,int leftPin1,int leftPin2,int rightPin1,int rightPin2) {
+
+
+        if (senderArduino != null) {
+            try {
+
+                ///////Send Messages with arguments a multiple of 2------Very Important
+                Log.i("portError", "forward Entered");
+                OSCMessage message = new OSCMessage("/motorValues");
+                message.addArgument((float) pwmLeft); //Left Motor PWM Value
+                message.addArgument((float) pwmRight); //Right Motor PWM Value
+
+                message.addArgument(leftPin1); //Left motor direction pin one    ---- pin1-0 and pin2-1  (Left Motor Forwards)
+                message.addArgument(leftPin2); //Left motor direction pin two
+
+                message.addArgument(rightPin1); //Right motor direction pin one   ---- pin1-0 and pin2-1  (Right Motor Forwards)
+                message.addArgument(rightPin2); //Right motor direction pin two
+
+                senderArduino.send(message);
+
+                Log.i("portError", message.getArguments().toString());
+                //zeroPacket=true;
+                //Log.i("portError","Packet Sent");
+                //sleep(1);
+
+            } catch (Exception e) {
+
+                Log.i("portError", e.getMessage());
+                //Log.i("portErrorArduino",e.toString());
+                // Error handling for some error
+            }
+        }
+
+
+    }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
+        /// OSC Initialization
+        try {
+            Log.i("portError","Entered");
+            // Connect to Arduino IP address and port
+            senderArduino = new OSCPortOut(InetAddress.getByName(arduino_IP), ardunio_Port);
+            Log.i("portError","Sucess");
+        } catch (Exception e) {
+            // Error handling for any other errors
+            Log.i("portError",e.getMessage());
+        }
+
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        Thread thread = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    botStop();
+                    botStop();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        Thread thread = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    botStop();
+                    botStop();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        thread.start();
+
+    }
+
+
+
+
+    private void botControlButtonClickListeners() {
 
         ////////////////////CLICK LISTENERS CODE STARTS//////////////////////////
 
@@ -387,341 +718,17 @@ public class ManualBotControllerMode extends AppCompatActivity {
         });
 
 
-
         /////////////////////CLICK LISTENERS CODE ENDS ///////////////////////////////
 
-
-
-
-        //////////////PWM SeekBar Listener Starts//////////////////////////
-
-
-        pwmSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-
-                pwmValue= seekBar.getProgress();
-                pwmValueText.setText(String.valueOf(seekBar.getProgress()));
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-
-        ////////////////PWM SeekBar Code Ends////////////////////////////////
-
-
     }
 
 
 
-    ///////////////BOT Motion Functions Starts/////////////////////////////////////
 
 
-    public void botForward() {
-        Thread thread =new Thread(){
 
-            @Override
-            public void run() {
-                sendPacketsToArduino(pwmValue,0,1,0,1);
-            }
-        };
 
-        thread.start();
 
-    }
 
-    public void botBackward() {
-        Thread thread =new Thread(){
 
-            @Override
-            public void run() {
-                sendPacketsToArduino(pwmValue,1,0,1,0);
-            }
-        };
-
-        thread.start();
-
-    }
-
-    public void botLeft() {
-        Thread thread =new Thread(){
-
-            @Override
-            public void run() {
-                sendPacketsToArduino(pwmValue,0,0,0,1);
-            }
-        };
-
-        thread.start();
-
-    }
-
-
-    public void botRight() {
-        Thread thread =new Thread(){
-
-            @Override
-            public void run() {
-                sendPacketsToArduino(pwmValue,0,1,0,0);
-            }
-        };
-
-        thread.start();
-
-    }
-
-
-    public void botSpotLeft() {
-        Thread thread =new Thread(){
-
-            @Override
-            public void run() {
-                sendPacketsToArduino(pwmValue,1,0,0,1);
-            }
-        };
-
-        thread.start();
-
-    }
-
-
-    public void botSpotRight() {
-        Thread thread =new Thread(){
-
-            @Override
-            public void run() {
-                sendPacketsToArduino(pwmValue,0,1,1,0);
-            }
-        };
-
-        thread.start();
-
-    }
-
-
-    public void botStop() throws InterruptedException {
-
-        sleep(sleepTime);
-
-        Thread thread =new Thread(){
-
-            @Override
-            public void run() {
-                sendPacketsToArduino(0,1,1,1,1);
-            }
-        };
-
-        thread.start();
-
-
-
-    }
-
-
-    ///////////////BOT Motion Functions Ends/////////////////////////////////////
-
-
-
-
-
-
-    ///Packet Sending Function
-
-    private void sendPacketsToArduino(int pwm,int leftPin1,int leftPin2,int rightPin1,int rightPin2) {
-
-
-        if (senderArduino != null) {
-            try {
-
-                ///////Send Messages with arguments a multiple of 2------Very Important
-                Log.i("portError","forward Entered");
-                OSCMessage message = new OSCMessage("/motorValues");
-                message.addArgument((float) pwm); //Left Motor PWM Value
-                message.addArgument((float) pwm); //Right Motor PWM Value
-
-                message.addArgument(leftPin1); //Left motor direction pin one    ---- pin1-0 and pin2-1  (Left Motor Forwards)
-                message.addArgument(leftPin2); //Left motor direction pin two
-
-                message.addArgument(rightPin1); //Right motor direction pin one   ---- pin1-0 and pin2-1  (Right Motor Forwards)
-                message.addArgument(rightPin2); //Right motor direction pin two
-
-                senderArduino.send(message);
-
-                Log.i("portError",message.getArguments().toString());
-                //zeroPacket=true;
-                //Log.i("portError","Packet Sent");
-                //sleep(1);
-
-            } catch (Exception e) {
-
-                Log.i("portError",e.getMessage());
-                //Log.i("portErrorArduino",e.toString());
-                // Error handling for some error
-            }
-        }
-
-
-    }
-
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-
-        /// OSC Initialization
-        try {
-            Log.i("portError","Entered");
-            // Connect to Arduino IP address and port
-            senderArduino = new OSCPortOut(InetAddress.getByName(arduino_IP), ardunio_Port);
-            Log.i("portError","Sucess");
-        } catch (Exception e) {
-            // Error handling for any other errors
-            Log.i("portError",e.getMessage());
-        }
-
-    }
-
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        Thread thread = new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    botStop();
-                    botStop();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        thread.start();
-
-    }
-
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-
-        Thread thread = new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    botStop();
-                    botStop();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-
-        thread.start();
-
-    }
 }
-
-
-
-
-
-
-
-
-/*   forward.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int count=0;
-                zeroPacket=false;
-                while(count< onClickTouchSensitivity) {
-                    botForward();
-                    count++;
-                }
-                zeroPacket=true;
-
-                //zeroPacket=false;
-            }
-        });
-
-        backward.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int count=0;
-                zeroPacket=false;
-                while(count< onClickTouchSensitivity) {
-                    botBackward();
-                    count++;
-                }
-                zeroPacket=true;
-
-            }
-        });
-
-        forward.setOnLongClickListener(new View.OnLongClickListener() {
-
-            @Override
-            public boolean onLongClick(View v) {
-                autoIncrement = true;
-                zeroPacket=false;
-                //repeatUpdateHandler.post(new RepetitiveUpdater());
-                return false;
-            }
-        });
-
-        backward.setOnLongClickListener(new View.OnLongClickListener() {
-
-            @Override
-            public boolean onLongClick(View v) {
-                autoDecrement = true;
-                zeroPacket=false;
-                //repeatUpdateHandler.post(new RepetitiveUpdater());
-                return false;
-            }
-        });
-
-
-
-
-    ////For continous click events
-    class RepetitiveUpdater implements Runnable {
-
-        @Override
-        public void run() {
-            long REPEAT_DELAY = 0;
-            if (autoIncrement) {
-                botForward();
-                repeatUpdateHandler.postDelayed(new RepetitiveUpdater(), REPEAT_DELAY);
-                //Log.i("portError","forward");
-            } else if (autoDecrement) {
-                botBackward();
-                repeatUpdateHandler.postDelayed(new RepetitiveUpdater(), REPEAT_DELAY);
-                //Log.i("portError","backward");
-            }
-        }
-
-    }
-
-
-*/
-
-
-
-
-
-
